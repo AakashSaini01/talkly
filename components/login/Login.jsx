@@ -36,7 +36,10 @@ const Login = () => {
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
 
-      const imgUrl = await upload(avatar.file);
+      let imgUrl = "";
+      if (avatar.file) {
+        imgUrl = await upload(avatar.file);
+      }
 
       await setDoc(doc(db, "users", res.user.uid), {
         username,
@@ -49,8 +52,7 @@ const Login = () => {
       await setDoc(doc(db, "userchats", res.user.uid), {
         chats: [],
       });
-
-      toast.success("User created successfully");
+      toast.success("Account created successfully");
     } catch (err) {
       console.log(err);
       toast.error(err.message);
@@ -67,8 +69,15 @@ const Login = () => {
 
     const { email, password } = Object.fromEntries(formData);
 
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      setLoading(false);
+      return;
+    }
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      toast.success("Logged in successfully");
     } catch (err) {
       console.log(err);
       toast.error(err.message);
@@ -76,6 +85,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+
   return (
     <div className="login">
       <div className="item">
@@ -86,7 +96,9 @@ const Login = () => {
           <button disabled={loading}>{loading ? "Loading" : "Login"}</button>
         </form>
       </div>
+
       <div className="separator" />
+
       <div className="item">
         <h4 className="heading">CREATE ACCOUNT</h4>
         <form onSubmit={handleRegister}>
